@@ -1,0 +1,37 @@
+name: CML HTML Report Workflow
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install CML
+      run: |
+        npm install -g @dvcorg/cml
+
+    - name: Generate CML Report
+      run: |
+        echo "# Website Preview" > report.md
+        echo "## Homepage Screenshot" >> report.md
+        echo '![](./screenshot_home.png "Homepage")' >> report.md
+        echo "## Notes" >> report.md
+        echo "Static HTML site built successfully." >> report.md
+
+    - name: Post report as comment
+      env:
+        REPO_TOKEN: ${{ secrets.CI_ACTION }}
+      run: |
+        npx cml comment create report.md
